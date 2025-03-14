@@ -15,6 +15,7 @@ mongoose.connect(
 );
 
 const TaskSchema = new mongoose.Schema({
+  id: { type: Number, required: true },
   title: { type: String, required: true },
   completed: { type: Boolean, default: false },
 });
@@ -22,12 +23,12 @@ const TaskSchema = new mongoose.Schema({
 const Task = mongoose.model("Task", TaskSchema);
 // Add this inside your routes
 app.get('/test-db', async (req, res) => {
-    try {
+  try {
         const isConnected = mongoose.connection.readyState === 1 ? "Connected" : "Not Connected";
-        res.status(200).send(`MongoDB is ${isConnected}`);
-    } catch (error) {
+    res.status(200).send(`MongoDB is ${isConnected}`);
+  } catch (error) {
         res.status(500).send('Database connection issue');
-    }
+  }
 });
 
 app.get("/tasks", async (req, res) => {
@@ -51,7 +52,8 @@ app.post("/tasks", async (req, res) => {
 
 app.put("/tasks/:id", async (req, res) => {
   try {
-    const task = await Task.findByIdAndUpdate(req.params.id, req.body, {
+    // const task = await Task.findByIdAndUpdate(req.params.id, req.body, {
+    const task = await Task.findOneAndUpdate({ id: req.params.id }, req.body, {
       new: true,
     });
     res.status(200).json(task);
@@ -62,7 +64,11 @@ app.put("/tasks/:id", async (req, res) => {
 
 app.delete("/tasks/:id", async (req, res) => {
   try {
-    await Task.findByIdAndDelete(req.params.id);
+    // await Task.findByIdAndDelete(req.params.id);
+    const task = await Task.findOneAndDelete({ id: req.params.id });
+    if (!task) {
+      return res.status(404).send("Task not found");
+    }
     res.status(200).send("Task deleted");
   } catch (error) {
     res.status(500).send(error.message);
