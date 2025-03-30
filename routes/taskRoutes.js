@@ -49,4 +49,14 @@ router.delete("/:id", async (req, res) => {
   }
 });
 
+// Delete all tasks
+router.delete("/", async (req, res) => {
+  try {
+    await Task.deleteMany();
+    res.status(200).send("All tasks deleted");
+  } catch (error) {
+    res.status(500).send(error.message);
+  }
+});
+
 module.exports = router;
